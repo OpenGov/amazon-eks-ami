@@ -8,7 +8,7 @@ final PACKER_IMAGE_MANIFEST = 'manifest.json'
 def config = [:]  // Pipeline configuration
 
 def containers = [
-  OGContainer('devops', "${env.INTERNAL_REGISTRY_HOSTNAME}/devops", 'PR-18-2.3.0', [resourceLimitCpu: '2000m', resourceLimitMemory: '2Gi'])
+  OGContainer('devops', "${env.INTERNAL_REGISTRY_HOSTNAME}/devops", '2.3.0', [resourceLimitCpu: '2000m', resourceLimitMemory: '2Gi'])
 ]
 
 OGPipeline(containers) {
