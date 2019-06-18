@@ -43,25 +43,24 @@ OGPipeline(containers) {
   }
 
   stage('Bake Encrypted AMIs') {
-    container('devops') { 
-        def jobs = config.accountIds.collectEntries { accountId ->
-          def job = {
-              withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                if (config.dry) {
-                  echo "Would have ran: 'make VERSION=${KUBERNETES_VERSION} k8s'"
-                  sh "touch ${PACKER_IMAGE_MANIFEST}"    
-                } else {
+    def jobs = config.accountIds.collectEntries { accountId ->
+      def job = {
+          withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+            if (config.dry) {
+              echo "Would have ran: 'make VERSION=${KUBERNETES_VERSION} k8s'"
+              sh "touch ${PACKER_IMAGE_MANIFEST}"    
+            } else {
+               container('devops') { 
                   sh "make VERSION=${KUBERNETES_VERSION} k8s"
-                }
-              }
             }
-          [accountId, job]
-        }
-
-        parallel jobs
-
-        archiveArtifacts(artifacts: PACKER_IMAGE_MANIFEST, fingerprint: true)
-      
+            }
+          }
+      }
+      [accountId, job]
     }
+
+    parallel jobs
+
+    archiveArtifacts(artifacts: PACKER_IMAGE_MANIFEST, fingerprint: true)
   }
 }
