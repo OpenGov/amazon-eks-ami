@@ -4,6 +4,7 @@
 
 final GIT_REPOSITORY_NAME = 'amazon-eks-ami'
 final KUBERNETES_VERSION = '1.12.7'
+final PACKER_IMAGE_MANIFEST = 'manifest.json'
 def config = [:]  // Pipeline configuration
 
 def containers = [
@@ -41,6 +42,7 @@ OGPipeline(containers) {
               withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                 if (config.dry) {
                   echo "Would have ran: 'make VERSION=${KUBERNETES_VERSION} k8s'"
+                  writeJSON(json: config, file: PACKER_IMAGE_MANIFEST, pretty: 4)
                 } else {
                   sh "make VERSION=${KUBERNETES_VERSION} k8s"
                 }
@@ -52,7 +54,7 @@ OGPipeline(containers) {
 
         parallel jobs
 
-        archiveArtifacts(artifacts: 'manifest.json', fingerprint: true)
+        archiveArtifacts(artifacts: PACKER_IMAGE_MANIFEST, fingerprint: true)
       
     }
   }
