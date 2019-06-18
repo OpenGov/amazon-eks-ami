@@ -20,10 +20,17 @@ OGPipeline(containers) {
     // then be loaded
     scmVars = checkout scm
     config = load('Jenkinsfile.properties')
-
+    
     // Get all relevant Git information
     config.git = [:]
     config.git.isPullRequest = env.CHANGE_ID.asBoolean() // Only set if its a pull request
+    if (config.accountIds.isEmpty()) {
+      if (config.git.isPullRequest){
+          config.accountIds = config.awsAccountsOnPullRequest
+      } else {
+          config.accountIds = config.awsAccountsOnMerge
+      }  
+    }
 
     // Check version
     container('devops') {
