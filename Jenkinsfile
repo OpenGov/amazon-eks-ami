@@ -42,7 +42,8 @@ OGPipeline(containers) {
               withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                 if (config.dry) {
                   echo "Would have ran: 'make VERSION=${KUBERNETES_VERSION} k8s'"
-                  writeJSON(json: config, file: PACKER_IMAGE_MANIFEST, pretty: 4)
+                  sh "touch ${PACKER_IMAGE_MANIFEST}"
+                  
                 } else {
                   sh "make VERSION=${KUBERNETES_VERSION} k8s"
                 }
