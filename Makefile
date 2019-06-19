@@ -61,7 +61,7 @@ k8s: validate
 		-var cni_version=$(CNI_VERSION) \
 		-var cni_plugin_version=$(CNI_PLUGIN_VERSION) \
 		-var docker_version=$(DOCKER_VERSION) \
-		-var og_image_version=$(OG_IMAGE_VERSION)
+		-var og_image_version=$(OG_IMAGE_VERSION) \
 		eks-worker-al2.json
 
 .PHONY: 1.10
