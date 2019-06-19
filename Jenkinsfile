@@ -20,16 +20,16 @@ OGPipeline(containers) {
     // then be loaded
     scmVars = checkout scm
     config = load('Jenkinsfile.properties')
-    
+
     // Get all relevant Git information
     config.git = [:]
     config.git.isPullRequest = env.CHANGE_ID.asBoolean() // Only set if its a pull request
     if (config.accountIds.isEmpty()) {
       if (config.git.isPullRequest){
-          config.accountIds = config.awsAccountsOnPullRequest
+        config.accountIds = config.awsAccountsOnPullRequest
       } else {
-          config.accountIds = config.awsAccountsOnMerge
-      }  
+        config.accountIds = config.awsAccountsOnMerge
+      }
     }
 
     // Check version
@@ -45,16 +45,16 @@ OGPipeline(containers) {
   stage('Bake Encrypted AMIs') {
     def jobs = config.accountIds.collectEntries { accountId ->
       def job = {
-          withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-            if (config.dry) {
-              echo "Would have ran: 'make VERSION=${KUBERNETES_VERSION} k8s'"
-              sh "touch ${PACKER_IMAGE_MANIFEST}"    
-            } else {
-               container('devops') { 
-                      sh "make k8s AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION}"
-            }
+        withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+          if (config.dry) {
+            echo "Would have ran: 'make VERSION=${KUBERNETES_VERSION} k8s'"
+            sh "touch ${PACKER_IMAGE_MANIFEST}"
+          } else {
+            container('devops') {
+              sh "make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} k8s"
             }
           }
+        }
       }
       [accountId, job]
     }
