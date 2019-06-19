@@ -25,7 +25,7 @@ OGPipeline(containers) {
     config.git = [:]
     config.git.isPullRequest = env.CHANGE_ID.asBoolean() // Only set if its a pull request
 
-    echo "Initial Configuration: ${conutils.jsonify(config)}"
+    echo "Initial Configuration: ${utils.jsonify(config)}"
 
     if (config.accountIds.isEmpty()) {
       if (config.git.isPullRequest){
