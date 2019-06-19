@@ -51,7 +51,9 @@ OGPipeline(containers) {
               sh "touch ${PACKER_IMAGE_MANIFEST}"    
             } else {
                container('devops') { 
-                  sh "make VERSION=${KUBERNETES_VERSION} k8s"
+                  withEnv() {
+                      sh "make VERSION=${KUBERNETES_VERSION} k8s"
+                  }
             }
             }
           }
