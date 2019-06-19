@@ -51,7 +51,7 @@ OGPipeline(containers) {
               sh "touch ${PACKER_IMAGE_MANIFEST}"    
             } else {
                container('devops') { 
-                  withEnv(["REGIONS=${AMI_REGIONS}"]) {
+                  withEnv(["AMI_REGIONS=${config.regions}"]) {
                       sh "make VERSION=${KUBERNETES_VERSION} k8s"
                   }
             }
