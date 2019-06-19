@@ -24,12 +24,14 @@ OGPipeline(containers) {
     // Get all relevant Git information
     config.git = [:]
     config.git.isPullRequest = env.CHANGE_ID.asBoolean() // Only set if its a pull request
-    
+
+    echo "Initial Configuration: ${conutils.jsonify(config)}"
+
     if (config.accountIds.isEmpty()) {
       if (config.git.isPullRequest){
         echo 'Using default account for pull request build'
         config.accountIds = config.awsAccountsOnPullRequest
-        
+
       } else {
         echo 'Using default accounts for merge builds'
         config.accountIds = config.awsAccountsOnMerge
@@ -52,7 +54,7 @@ OGPipeline(containers) {
     def jobs = config.accountIds.collectEntries { accountId ->
       def job = {
         if (config.dry) {
-          echo "Would have ran: 'make VERSION=${KUBERNETES_VERSION} k8s'"
+          echo "Would have ran: 'make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} k8s'"
           sh "touch ${PACKER_IMAGE_MANIFEST}"
         } else {
 
