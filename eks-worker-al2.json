@@ -2,7 +2,6 @@
   "variables": {
     "aws_region": "us-west-2",
     "ami_name": "og-amazon-eks-node-{{timestamp}}",
-    "ami_regions":"us-west-2,us-east-1",
     "binary_bucket_region": "us-west-2",
     "creator": "{{env `USER`}}",
     "source_ami_owners": "137112412989",
@@ -22,7 +21,8 @@
     "cni_plugin_version": "",
     "kubernetes_build_date": "",
     "kubernetes_version": "",
-    "og_image_version": ""
+    "og_image_version": "",
+    "ami_regions": ""
   },
 
   "builders": [
