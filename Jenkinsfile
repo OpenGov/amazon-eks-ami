@@ -1,10 +1,11 @@
 #!/usr/bin/env groovy
 // Load the OG Jenkins Library
-@Library('OGJenkinsLib@3.6.1') _
+@Library('OGJenkinsLib@3.7.0') _
 
 final GIT_REPOSITORY_NAME = 'amazon-eks-ami'
-final KUBERNETES_VERSION = '1.12.7'
+final KUBERNETES_VERSION = '1.13.7'
 final PACKER_IMAGE_MANIFEST = 'manifest.json'
+final OG_IMAGE_VERSION = '1.1.0'
 def config = [:]  // Pipeline configuration
 
 def containers = [
@@ -60,7 +61,7 @@ OGPipeline(containers) {
 
           withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
             container('devops') {
-              sh "make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} k8s"
+              sh "make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} OG_IMAGE_VERSION=${OG_IMAGE_VERSION} k8s"
             } // container
           }// withCredentials
         }
