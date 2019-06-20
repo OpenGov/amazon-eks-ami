@@ -55,7 +55,7 @@ OGPipeline(containers) {
     def jobs = config.accountIds.collectEntries { accountId ->
       def job = {
         if (config.dry) {
-          echo "Would have ran: 'make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} k8s'"
+          echo "Would have ran: 'make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} OG_IMAGE_VERSION=${OG_IMAGE_VERSION} k8s'"
           sh "touch ${PACKER_IMAGE_MANIFEST}"
         } else {
 
