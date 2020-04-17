@@ -58,12 +58,16 @@ sudo yum install -y \
     conntrack \
     curl \
     jq \
+    ec2-instance-connect \
     nfs-utils \
     socat \
     unzip \
     wget
     
 sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+ 
+# Remove the ec2-net-utils package, if it's installed. This package interferes with the route setup on the instance.
+if yum list installed | grep ec2-net-utils; then sudo yum remove ec2-net-utils -y -q; fi
 
 ################################################################################
 ### AWS Inspector Agent ########################################################

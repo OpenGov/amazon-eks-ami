@@ -1,11 +1,11 @@
 DOCKER_VERSION ?= 18.09.9ce-2.amzn2
-KUBERNETES_BUILD_DATE ?= 2020-01-22
+KUBERNETES_BUILD_DATE ?= 2020-02-22
 CNI_VERSION ?= v0.6.0
 CNI_PLUGIN_VERSION ?= v0.7.5
 ARCH ?= x86_64
 BINARY_BUCKET_NAME ?= amazon-eks
 SOURCE_AMI_OWNERS ?= 137112412989
-OG_IMAGE_VERSION ?= 1.1.0
+OG_IMAGE_VERSION ?= 1.2.0
 AMI_REGIONS ?= us-west-2,us-east-1
 
 PACKER_BINARY ?= packer
@@ -27,7 +27,7 @@ T_YELLOW := \e[0;33m
 T_RESET := \e[0m
 
 .PHONY: all
-all: 1.10 1.11 1.12 1.14
+all: 1.10 1.11 1.12 1.14 1.15
 
 .PHONY: validate
 validate:
@@ -81,3 +81,7 @@ k8s: validate
 .PHONY: 1.14
 1.14: validate
 	$(MAKE) VERSION=1.14.9 k8s
+
+.PHONY: 1.15
+1.15: validate
+	$(MAKE) VERSION=1.15.10 k8s
