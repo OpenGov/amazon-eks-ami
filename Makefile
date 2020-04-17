@@ -3,7 +3,7 @@ PACKER_VARIABLES := aws_region ami_name binary_bucket_name binary_bucket_region 
 
 K8S_VERSION_PARTS := $(subst ., ,$(kubernetes_version))
 K8S_VERSION_MINOR := $(word 1,${K8S_VERSION_PARTS}).$(word 2,${K8S_VERSION_PARTS})
-
+kubernetes_build_date ?= 2020-02-22
 aws_region ?= $(AWS_DEFAULT_REGION)
 binary_bucket_region ?= $(AWS_DEFAULT_REGION)
 ami_name ?= og-amazon-eks-node-$(K8S_VERSION_MINOR)-v$(shell date +'%Y%m%d')
