@@ -55,13 +55,13 @@ OGPipeline(containers) {
     def jobs = config.accountIds.collectEntries { accountId ->
       def job = {
         if (config.dry) {
-          echo "Would have ran: 'make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} OG_IMAGE_VERSION=${OG_IMAGE_VERSION} k8s'"
+          echo "Would have ran: 'make AMI_REGIONS=${config.regions} kubernetes_version=${KUBERNETES_VERSION} OG_IMAGE_VERSION=${OG_IMAGE_VERSION} k8s'"
           sh "touch ${PACKER_IMAGE_MANIFEST}"
         } else {
 
           withCredentials([usernamePassword(credentialsId: accountId, passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
             container('devops') {
-              sh "make AMI_REGIONS=${config.regions} VERSION=${KUBERNETES_VERSION} OG_IMAGE_VERSION=${OG_IMAGE_VERSION} k8s"
+              sh "make AMI_REGIONS=${config.regions} kubernetes_version=${KUBERNETES_VERSION} OG_IMAGE_VERSION=${OG_IMAGE_VERSION} k8s"
             } // container
           }// withCredentials
         }
