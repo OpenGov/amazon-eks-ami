@@ -66,9 +66,6 @@ sudo yum install -y \
     
 sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
  
-# Remove the ec2-net-utils package, if it's installed. This package interferes with the route setup on the instance.
-if yum list installed | grep ec2-net-utils; then sudo yum remove ec2-net-utils -y -q; fi
-
 ################################################################################
 ### AWS Inspector Agent ########################################################
 ################################################################################
@@ -207,12 +204,6 @@ sudo mkdir -p /etc/kubernetes/kubelet
 sudo mkdir -p /etc/systemd/system/kubelet.service.d
 sudo mv $TEMPLATE_DIR/kubelet-kubeconfig /var/lib/kubelet/kubeconfig
 sudo chown root:root /var/lib/kubelet/kubeconfig
-
-if [ "$KUBERNETES_MINOR_VERSION" = "1.14" ]; then
-    sudo mv $TEMPLATE_DIR/1.14/kubelet.service /etc/systemd/system/kubelet.service
-else
-    sudo mv $TEMPLATE_DIR/kubelet.service /etc/systemd/system/kubelet.service
-fi
 
 sudo chown root:root /etc/systemd/system/kubelet.service
 sudo mv $TEMPLATE_DIR/kubelet-config.json /etc/kubernetes/kubelet/kubelet-config.json
