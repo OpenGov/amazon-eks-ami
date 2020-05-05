@@ -3,7 +3,7 @@
 1.4.1 - 05/04/2020
 -----------------------
 - Upgrade to EKS 1.15.11
-- Added AWS-optimized Linux kernel 4.19
+- kernel version set to 4.14.133-113.112.amzn2
 
 1.4.0 - 04/17/2020
 -----------------------
