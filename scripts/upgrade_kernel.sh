@@ -6,7 +6,6 @@ set -o errexit
 
 sudo yum update -y kernel
 sudo grubby --update-kernel=ALL --args=udev.event-timeout=300
-sudo echo "kernel.pid_max=999999" >> /etc/sysctl.conf
 sudo /bin/sh -c "echo 'kernel.pid_max = 999999' >> /etc/sysctl.conf"
 #sudo amazon-linux-extras install kernel-ng
 #sudo yum -y install kernel-4.14.133-113.112.amzn2.x86_64
