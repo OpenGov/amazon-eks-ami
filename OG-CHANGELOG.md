@@ -1,5 +1,10 @@
 # Changelog
 
+1.5.2 - 08/09/2020
+-----------------------
+- https://aws.amazon.com/premiumsupport/knowledge-center/eks-worker-nodes-image-cache/
+- added image gc thresholds under kubelet config 
+
 1.5.1 - 08/04/2020
 -----------------------
 - docker version updated to `19.03.6ce-4.amzn2`
