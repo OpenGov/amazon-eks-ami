@@ -2,6 +2,8 @@
   "kind": "KubeletConfiguration",
   "apiVersion": "kubelet.config.k8s.io/v1beta1",
   "address": "0.0.0.0",
+  "imageGCHighThresholdPercent": 70, 
+  "imageGCLowThresholdPercent": 50,
   "authentication": {
     "anonymous": {
       "enabled": false
