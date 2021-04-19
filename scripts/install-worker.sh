@@ -24,7 +24,6 @@ validate_env_set() {
 validate_env_set BINARY_BUCKET_NAME
 validate_env_set BINARY_BUCKET_REGION
 validate_env_set DOCKER_VERSION
-validate_env_set CNI_VERSION
 validate_env_set CNI_PLUGIN_VERSION
 validate_env_set KUBERNETES_VERSION
 validate_env_set KUBERNETES_BUILD_DATE
@@ -64,19 +63,6 @@ sudo yum install -y \
     socat \
     unzip \
     wget
-    
-sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
- 
-################################################################################
-### AWS Inspector Agent ########################################################
-################################################################################
-
-# Download the agent installation script
-wget https://inspector-agent.amazonaws.com/linux/latest/install
-# Install and turn off and auto-update process  
-sudo bash install -u false
-# Remove the agent installation script
-rm install
 
 # Remove the ec2-net-utils package, if it's installed. This package interferes with the route setup on the instance.
 if yum list installed | grep ec2-net-utils; then sudo yum remove ec2-net-utils -y -q; fi
@@ -147,6 +133,7 @@ fi
 # kubelet uses journald which has built-in rotation and capped size.
 # See man 5 journald.conf
 sudo mv $TEMPLATE_DIR/logrotate-kube-proxy /etc/logrotate.d/kube-proxy
+sudo mv $TEMPLATE_DIR/logrotate.conf /etc/logrotate.conf
 sudo chown root:root /etc/logrotate.d/kube-proxy
 sudo mkdir -p /var/log/journal
 
@@ -172,7 +159,7 @@ BINARIES=(
     aws-iam-authenticator
 )
 for binary in ${BINARIES[*]} ; do
-    if [[ ! -z "$AWS_ACCESS_KEY_ID" ]]; then
+    if [[ -n "$AWS_ACCESS_KEY_ID" ]]; then
         echo "AWS cli present - using it to copy binaries from s3."
         aws s3 cp --region $BINARY_BUCKET_REGION $S3_PATH/$binary .
         aws s3 cp --region $BINARY_BUCKET_REGION $S3_PATH/$binary.sha256 .
@@ -186,50 +173,37 @@ for binary in ${BINARIES[*]} ; do
     sudo mv $binary /usr/bin/
 done
 
+# Since CNI 0.7.0, all releases are done in the plugins repo.
+CNI_PLUGIN_FILENAME="cni-plugins-linux-${ARCH}-${CNI_PLUGIN_VERSION}"
+
 if [ "$PULL_CNI_FROM_GITHUB" = "true" ]; then
-    echo "Downloading CNI assets from Github"
-    wget https://github.com/containernetworking/cni/releases/download/${CNI_VERSION}/cni-${ARCH}-${CNI_VERSION}.tgz
-    wget https://github.com/containernetworking/cni/releases/download/${CNI_VERSION}/cni-${ARCH}-${CNI_VERSION}.tgz.sha512
-
-    wget https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-${ARCH}-${CNI_PLUGIN_VERSION}.tgz
-    wget https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-${ARCH}-${CNI_PLUGIN_VERSION}.tgz.sha512
-    sudo sha512sum -c cni-${ARCH}-${CNI_VERSION}.tgz.sha512
-    sudo sha512sum -c cni-plugins-${ARCH}-${CNI_PLUGIN_VERSION}.tgz.sha512
-    rm cni-${ARCH}-${CNI_VERSION}.tgz.sha512
-    rm cni-plugins-${ARCH}-${CNI_PLUGIN_VERSION}.tgz.sha512
+    echo "Downloading CNI plugins from Github"
+    wget "https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/${CNI_PLUGIN_FILENAME}.tgz"
+    wget "https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/${CNI_PLUGIN_FILENAME}.tgz.sha512"
+    sudo sha512sum -c "${CNI_PLUGIN_FILENAME}.tgz.sha512"
+    rm "${CNI_PLUGIN_FILENAME}.tgz.sha512"
 else
-    CNI_BINARIES=(
-            cni-${ARCH}-${CNI_VERSION}.tgz
-            cni-plugins-${ARCH}-${CNI_PLUGIN_VERSION}.tgz
-    )
-    for binary in ${CNI_BINARIES[*]} ; do
-        if [[ ! -z "$AWS_ACCESS_KEY_ID" ]]; then
-            echo "AWS cli present - using it to copy binaries from s3."
-            aws s3 cp --region $BINARY_BUCKET_REGION $S3_PATH/$binary .
-            aws s3 cp --region $BINARY_BUCKET_REGION $S3_PATH/$binary.sha256 .
-            sudo sha256sum -c $binary.sha256
-        else
-            echo "AWS cli missing - using wget to fetch cni binaries from s3. Note: This won't work for private bucket."
-            sudo wget $S3_URL_BASE/$binary
-            sudo wget $S3_URL_BASE/$binary.sha256
-        fi
-    done
+    if [[ -n "$AWS_ACCESS_KEY_ID" ]]; then
+        echo "AWS cli present - using it to copy binaries from s3."
+        aws s3 cp --region "$BINARY_BUCKET_REGION $S3_PATH/${CNI_PLUGIN_FILENAME}.tgz" .
+        aws s3 cp --region "$BINARY_BUCKET_REGION $S3_PATH/${CNI_PLUGIN_FILENAME}.tgz.sha256" .
+        sudo sha256sum -c "${CNI_PLUGIN_FILENAME}.tgz.sha256"
+    else
+        echo "AWS cli missing - using wget to fetch cni binaries from s3. Note: This won't work for private bucket."
+        sudo wget "$S3_URL_BASE/${CNI_PLUGIN_FILENAME}.tgz"
+        sudo wget "$S3_URL_BASE/${CNI_PLUGIN_FILENAME}.tgz.sha256"
+    fi
 fi
-sudo tar -xvf cni-${ARCH}-${CNI_VERSION}.tgz -C /opt/cni/bin
-sudo tar -xvf cni-plugins-${ARCH}-${CNI_PLUGIN_VERSION}.tgz -C /opt/cni/bin
-rm cni-${ARCH}-${CNI_VERSION}.tgz
-rm cni-plugins-${ARCH}-${CNI_PLUGIN_VERSION}.tgz
+sudo tar -xvf "${CNI_PLUGIN_FILENAME}.tgz" -C /opt/cni/bin
+rm "${CNI_PLUGIN_FILENAME}.tgz"
 
-sudo rm *.sha256
-
-KUBERNETES_MINOR_VERSION=${KUBERNETES_VERSION%.*}
+sudo rm ./*.sha256
 
 sudo mkdir -p /etc/kubernetes/kubelet
 sudo mkdir -p /etc/systemd/system/kubelet.service.d
 sudo mv $TEMPLATE_DIR/kubelet-kubeconfig /var/lib/kubelet/kubeconfig
 sudo chown root:root /var/lib/kubelet/kubeconfig
 sudo mv $TEMPLATE_DIR/kubelet.service /etc/systemd/system/kubelet.service
-
 sudo chown root:root /etc/systemd/system/kubelet.service
 sudo mv $TEMPLATE_DIR/kubelet-config.json /etc/kubernetes/kubelet/kubelet-config.json
 sudo chown root:root /etc/kubernetes/kubelet/kubelet-config.json
@@ -261,6 +235,16 @@ ARCH="$(uname -m)"
 EOF
 sudo mv /tmp/release /etc/eks/release
 sudo chown -R root:root /etc/eks
+
+################################################################################
+### Stuff required by "protectKernelDefaults=true" #############################
+################################################################################
+
+cat <<EOF | sudo tee -a /etc/sysctl.d/99-amazon.conf
+vm.overcommit_memory=1
+kernel.panic=10
+kernel.panic_on_oops=1
+EOF
 
 ################################################################################
 ### Cleanup ####################################################################
