@@ -64,6 +64,19 @@ sudo yum install -y \
     unzip \
     wget
 
+sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+
+################################################################################
+### AWS Inspector Agent ########################################################
+################################################################################
+
+# Download the agent installation script
+wget https://inspector-agent.amazonaws.com/linux/latest/install
+# Install and turn off and auto-update process  
+sudo bash install -u false
+# Remove the agent installation script
+rm install
+
 # Remove the ec2-net-utils package, if it's installed. This package interferes with the route setup on the instance.
 if yum list installed | grep ec2-net-utils; then sudo yum remove ec2-net-utils -y -q; fi
 
@@ -198,6 +211,8 @@ sudo tar -xvf "${CNI_PLUGIN_FILENAME}.tgz" -C /opt/cni/bin
 rm "${CNI_PLUGIN_FILENAME}.tgz"
 
 sudo rm ./*.sha256
+
+KUBERNETES_MINOR_VERSION=${KUBERNETES_VERSION%.*}
 
 sudo mkdir -p /etc/kubernetes/kubelet
 sudo mkdir -p /etc/systemd/system/kubelet.service.d
